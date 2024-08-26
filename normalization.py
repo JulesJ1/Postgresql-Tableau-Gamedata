@@ -39,16 +39,57 @@ def add_column(column_name):
       """)
       conn.commit()
 
-conn = psycopg.connect(host=conf['host'], dbname=conf['dbname'], user=conf['user'],password=conf['password'],port=conf['port'])
+def insert_data(table):
+    with psycopg.connect(DATABASE_URL) as conn:
+      with conn.cursor() as cur:
+        cur.execute(f"""
+        
+        WITH tags AS (SELECT string_to_array("Tags",',') AS names FROM games )
+        INSERT INTO {table} (test_name) SELECT DISTINCT unnest("names") FROM tags LIMIT 10
+        
+        """)
+        conn.commit()
+        cur.close()
+      conn.close()
+    
+def rename_column(column_name, new_name):
+    with psycopg.connect(DATABASE_URL) as conn:
+      with conn.cursor() as cur:
+        cur.execute(f"""
+        ALTER TABLE {TABLE_NAME}
+        RENAME COLUMN {column_name} TO {new_name};
+        
+        """)
+        conn.commit()
+        cur.close()
+      conn.close()
+    
+def delete_duplicates():
+      with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+          cur.execute(f"""
+                DELETE FROM {TABLE_NAME} g1
+                WHERE EXISTS
+                (
+                  select null
+                  FROM {TABLE_NAME} g2
+                  WHERE g2.app_id = g1.app_id
+                  AND g2.ctid > g1.ctid
+                );
+          
+            """)
+          conn.commit()
+        cur.close()
+      conn.close()
 
-cur = conn.cursor()
-
-conn.set_session(autocommit=True)
-cur.execute("CREATE TABLE IF NOT EXISTS gamedata")
 
 
-conn.commit()
+if __name__ == '__main__':
 
-cur.close()
-
-conn.close()
+  query = """WITH tagslist AS (SELECT string_to_array("Tags",',') AS names FROM games )
+            SELECT DISTINCT unnest("names") FROM tagslist
+            LIMIT 10
+            """
+ 
+              
+  rename_column('"App ID"',"app_id")
