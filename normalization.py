@@ -44,8 +44,8 @@ def insert_data(table):
       with conn.cursor() as cur:
         cur.execute(f"""
         
-        WITH tags AS (SELECT string_to_array("Tags",',') AS names FROM games )
-        INSERT INTO {table} (test_name) SELECT DISTINCT unnest("names") FROM tags LIMIT 10
+        WITH tags AS (SELECT string_to_array("tags",',') AS names FROM games )
+        INSERT INTO {table} (tag_name) SELECT DISTINCT trim(unnest("names")) FROM tags
         
         """)
         conn.commit()
@@ -81,6 +81,19 @@ def delete_duplicates():
           conn.commit()
         cur.close()
       conn.close()
+  
+def clear_table(table):
+       with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+          cur.execute(f"""
+
+                TRUNCATE {table}
+          
+            """)
+          conn.commit()
+        cur.close()
+       conn.close()
+    
 
 
 
@@ -90,6 +103,15 @@ if __name__ == '__main__':
             SELECT DISTINCT unnest("names") FROM tagslist
             LIMIT 10
             """
+            
+  query2 = """WITH gt as(
+            SELECT DISTINCT g.app_id,g.tags, t.tag_name,t.tag_id 
+            FROM games as g
+            JOIN tags as t 
+            ON g.tags LIKE '%' || t.tag_name || '%')
+          INSERT INTO test3 (game_id,tag_id) SELECT app_id,tag_id FROM gt
+          """
  
               
-  rename_column('"App ID"',"app_id")
+  insert_data("tags")
+  #clear_table("tags,test3")
