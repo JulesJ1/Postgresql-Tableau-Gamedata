@@ -12,3 +12,7 @@ Project Steps:
 The steam game data contains information about over 65,000 games taken from 2023. Available here: https://docs.google.com/spreadsheets/d/1D5MErWbFJ2Gsde9QxJ_HNMltKfF6fHCYdv4OQpXdnZ4/edit?gid=90041317#gid=90041317
 
 Dashboard Preview:
+
+
+
+<img src="steamdashboard.JPG" width="600" height="400">
